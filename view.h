@@ -8,25 +8,19 @@
 #include <GL/glut.h>
 #include "matrix4f.h"
 
-
 using namespace std;
 
 //
 // Sample code for physics simulation
 //
 
-
 // Implements cloth simulation
 
-
-class Vector3f;
 class Triangle;
 class TriangleMesh;
+class Skeleton;
+class Weights;
 class Edge;
-
-
-
-
 
 class Triangle {
 friend class TriangleMesh;
@@ -161,7 +155,6 @@ float fmin(float f1,float f2, float f3) {
 	return f;
 };
 
-
 class TriangleMesh 
 {
 	vector <Vector3f> _v;
@@ -188,6 +181,13 @@ public:
 		v1 = _v[_trig[i]._vertex[0]]; 
 		v2 = _v[_trig[i]._vertex[1]]; 
 		v3 = _v[_trig[i]._vertex[2]]; 
+	}
+	
+	void setTriangleVertices(int i, Vector3f v1, Vector3f v2, Vector3f v3)
+	{
+		_v[_trig[i]._vertex[0]] = v1; 
+		_v[_trig[i]._vertex[1]] = v2; 
+		_v[_trig[i]._vertex[2]] = v3; 
 	}
 	
 	void getTriangleNormals(int i, Vector3f & v1, Vector3f & v2, Vector3f & v3)
@@ -233,6 +233,133 @@ public:
 //			cout << "trig " << i << " v2 " << v2 << " v3 " << v3 << " area = " << _trig[i]._area << endl;
 		}
 	}
+};
+
+
+// Read skeleton file and make it a THANG
+class Skeleton
+{
+	vector <Vector3f> _s;
+	vector <int> _sn;
+	vector <int> _sp;
+	//vector <Vector3f> _vn;
+	//vector <Triangle> _trig;
+	//vector <Node> _node;
+	//vector <Edge> _edge;
+
+//	map <pair < int, int > , Edge > _edge;
+
+
+    Vector3f _p1, _p2;
+
+
+public: 
+	Skeleton(char * filename) { loadFile(filename) ;};
+	Skeleton() {};
+	void loadFile(char * filename);
+
+	int boneNum() { return _sn.size() ;};
+
+	void getBoneVertice(int i, Vector3f & s)
+	{
+		s = _s[i];
+	}
+	
+	void setBoneVertice(int i, Vector3f s)
+	{
+	    _s[i] = s;
+	}
+	
+	int getParentBone(int i)
+	{
+	    return _sp[i];
+	}
+	
+//    vector<int> getChildBones(int i)
+//	{
+//	    for(int j = i+1; j<boneNum; j++)
+//	    {
+//	        if(this.getParentBone
+//	    }
+//	}
+	
+	void getMidPoint(int i, Vector3f & mp)
+	{
+	
+	    if ( i == 0 ) {
+	        cerr << "Don't move the root!" << endl;
+        }
+	
+	    _p1 = _s[i];
+	    _p2 = _s[_sp[i]];
+	    
+	    _p1 += _p2;
+	    
+	    _p1 /= 2;
+	    
+	    mp = _p1;
+	}
+	
+	/*void getTriangleNormals(int i, Vector3f & v1, Vector3f & v2, Vector3f & v3)
+	{
+		v1 = _vn[_trig[i]._normal[0]]; 
+		v2 = _vn[_trig[i]._normal[1]]; 
+		v3 = _vn[_trig[i]._normal[2]]; 
+	}
+		
+
+	void getMorseValue(int i, float & v1, float & v2, float & v3)
+	{
+		v1 = _node[_trig[i]._vertex[0]].cost; 
+		v2 = _node[_trig[i]._vertex[1]].cost; 
+		v3 = _node[_trig[i]._vertex[2]].cost; 
+	}
+
+	float color(int i) { return _trig[i].color();};
+
+
+	void setMorseMinMax(int i, float min, float max)
+	{
+		_trig[i].setMorseMinMax(min,max);
+	}
+
+	void getMorseMinMax(int i, float & min, float & max)
+	{
+		_trig[i].getMorseMinMax(min,max);
+	}
+
+
+	void calcTriangleArea() 
+	{
+		Vector3f v1,v2,v3;
+
+		for (int i = 0 ;i < _trig.size(); i++) 
+		{
+			getTriangleVertices(i, v1,v2,v3);
+			v3 -= v1;
+			v2 -= v1;
+
+			_trig[i]._area = 0.5f*sqrt(v3.dot(v3)*v2.dot(v2) - (v3.dot(v2)*(v3.dot(v2))));  
+//			cout << "trig " << i << " v2 " << v2 << " v3 " << v3 << " area = " << _trig[i]._area << endl;
+		}
+	}*/
+};
+	
+class Weights
+{
+	vector <vector <float> > _w;
+
+public: 
+	Weights(char * filename) { loadFile(filename) ;};
+    Weights() {};
+	void loadFile(char * filename);
+
+	int weightNum() { return _w.size() ;};
+
+	void getWeights(int i, vector<float> & w)
+	{
+		w = _w[i];
+	}	
 };
 
 #endif //_rt_H

@@ -137,6 +137,8 @@ static float matEmission2[4] = {0.0, 0.0, 0.0, 1.0};
 
 
 TriangleMesh trig;
+Skeleton skel;
+Weights wght;
 GLUquadricObj *qobj;
 
 
@@ -213,7 +215,6 @@ int find(Edge & e, vector <Edge> list)
 
 	return -1;
 }
-
 
 void TriangleMesh::loadFile(char * filename)
 {
@@ -450,8 +451,75 @@ void TriangleMesh::loadFile(char * filename)
 
 };
 
+void Skeleton::loadFile(char * filename)
+{
+	ifstream f(filename);
+
+	if (f == NULL) {
+		cerr << "failed reading skeleton data file " << filename << endl;
+		exit(1);
+	}
+
+	char buf[1024];
+	char header[100];
+	float x,y,z;
+	int bone, parent;
+
+	while (!f.eof()) {
+	    f.getline(buf, sizeof(buf));
+		sscanf(buf, "%d %f %f %f %d", &bone, &x, &y, &z, &parent);
+		_s.push_back(Vector3f(x,y,z));
+		_sn.push_back(bone);
+		_sp.push_back(parent);
+		
+ 	}
+ 	
+ 	_s.pop_back();
+ 	_sn.pop_back();
+ 	_sp.pop_back();
+ 	
+	f.close();
+
+};
+
+void Weights::loadFile(char * filename)
+{
+	ifstream f(filename);
+
+	if (f == NULL) {
+		cerr << "failed reading weights data file " << filename << endl;
+		exit(1);
+	}
+
+	char buf[1024];
+	char header[100];
+	float we[22];
+	float x,y,z;
+	int bone, parent;
+    vector<float> weightsVec;
 
 
+	while (!f.eof()) {
+	    f.getline(buf, sizeof(buf));
+		sscanf(buf, "%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", & we[0], & we[1], & we[2], & we[3], & we[4], & we[5], & we[6], & we[7], & we[8], & we[9], & we[10], & we[11], & we[12], & we[13], & we[14], & we[15], & we[16], & we[17], & we[18], & we[19], & we[20], & we[21]);
+		
+		for(int i=0; i < 22; i++) {
+		    weightsVec.push_back(we[i]);
+		}
+		
+		_w.push_back(weightsVec);
+		
+		for(int i=0; i < 22; i++) {
+		    weightsVec.pop_back();
+		}
+		
+ 	}
+ 	
+ 	_w.pop_back();
+ 	
+	f.close();
+
+};
 
 void recalcModelView(void)
 {
@@ -473,8 +541,17 @@ void myDisplay()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear OpenGL Window
 	int trignum = trig.trigNum();
+	int skelnum = skel.boneNum();
+	int weightnum = wght.weightNum();
+	cout << "Number of Triangles: " << trignum << endl;	
+	cout << "Number of Bones: " << skelnum << endl;
+	cout << "Number of Weight Vectors: " << weightnum << endl;
 	Vector3f v1,v2,v3,n1,n2,n3;
-
+    Vector3f t1, t2, t3;
+    Vector3f mp;
+    
+    skel.getMidPoint(1, mp);
+    cout << "MidPoint: (" << mp[0] << ", " << mp[1] << ", " << mp[2] << ")" << endl;
 
 	for (int i = 0 ; i < trignum; i++)  
 	{
@@ -509,10 +586,11 @@ void myDisplay()
 				glNormal3f(-n3[0],-n3[1],-n3[2]);
 				glVertex3f(v3[0],v3[1],v3[2]);
 
-				skinColor[1] = m1; skinColor[0] = 1-m1;
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor); 
-				glNormal3f(-n1[0],-n1[1],-n1[2]);
-				glVertex3f(v1[0],v1[1],v1[2]);
+                // WHAT IS THIS, I DON'T EVEN...
+				//skinColor[1] = m1; skinColor[0] = 1-m1;   
+			    //glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor); 
+				//glNormal3f(-n1[0],-n1[1],-n1[2]);
+				//glVertex3f(v1[0],v1[1],v1[2]);
 
 			glEnd();
 		}
@@ -529,13 +607,19 @@ void myDisplay()
 
 int main(int argc, char **argv)
 {
-	if (argc >  1)  {
+	if (argc >  2)  {
 		trig.loadFile(argv[1]);
+		skel.loadFile(argv[2]);
+		wght.loadFile(argv[3]);
+		
 	}
 	else {
 		cerr << argv[0] << " <filename> " << endl;
 		exit(1);
 	}
+
+
+    
 
 	int width, height;
 	glutInit(&argc, argv);
