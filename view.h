@@ -16,6 +16,7 @@ using namespace std;
 
 // Implements cloth simulation
 
+class Vector3f;
 class Triangle;
 class TriangleMesh;
 class Skeleton;
