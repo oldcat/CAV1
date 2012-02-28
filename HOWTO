@@ -21,3 +21,8 @@ In attachment2.out, the weights for each bone is listed.
 
 Each line in attachment.out corresponds to a mesh vertex and
 consists of bone weights for each bone in the order of bone IDs.
+
+**** amendments ****
+matrix4f.cc, matrix4f.h include the classes / methods for computing
+the rotation and translation matrix. They include the vector3f and
+matrix4f classes that were previously defined in view.h.  
