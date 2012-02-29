@@ -4,6 +4,8 @@
 #include <cmath>
 #include <map>
 #include <vector>
+#include <cassert>
+#include <algorithm>
 #include <cstring>
 #include <GL/glut.h>
 #include "matrix4f.h"
@@ -276,13 +278,17 @@ public:
 	    return _sp[i];
 	}
 	
-//    vector<int> getChildBones(int i)
-//	{
-//	    for(int j = i+1; j<boneNum; j++)
-//	    {
-//	        if(this.getParentBone
-//	    }
-//	}
+    void getChildBones(int i, vector<int> & ch)
+	{
+	    for(int _j = 1; _j<boneNum(); _j++)
+	    {
+	        if(getParentBone(_j) == i) {
+	            ch.push_back(_j);
+            } else if(std::find(ch.begin(), ch.end(), getParentBone(_j)) != ch.end()) {
+                ch.push_back(_j);
+            }
+	    }
+	}
 	
 	void getMidPoint(int i, Vector3f & mp)
 	{

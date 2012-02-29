@@ -5,12 +5,13 @@
 #include <set>
 #include "view.h"
 
+const double PI = std::atan(1.0)*4;
 
 GLdouble bodyWidth = 1.0;
 
 GLfloat angle = -150;   /* in degrees */
 GLfloat xloc = 0, yloc = 0, zloc = 0;
-int moving, begin;
+int moving, begin, skeleton;
 int newModel = 1;
 
 
@@ -386,7 +387,7 @@ void TriangleMesh::loadFile(char * filename)
 	vector < Vector3f > facenorm (_trig.size());
 
 	for (int i = 0; i < _edge.size(); i++) {
-		cout << " edge " << i << " trig list " << _edge[i].getTrigList().size()<< endl;
+		//cout << " edge " << i << " trig list " << _edge[i].getTrigList().size()<< endl;
 	}
 
 	for (int i = 0; i < _trig.size(); i++) 
@@ -549,6 +550,16 @@ void myDisplay()
 	Vector3f v1,v2,v3,n1,n2,n3;
     Vector3f t1, t2, t3;
     Vector3f mp;
+    Vector3f bv1, bv2;
+    vector<int> children;
+    
+    skel.getChildBones(0, children);
+    cout << "BONES: ";
+    for(int i = 0; i < children.size()-1; i++) {
+        cout << children[i] << ", ";
+    }
+    cout << children[children.size()-1] << endl;
+    
     
     skel.getMidPoint(1, mp);
     cout << "MidPoint: (" << mp[0] << ", " << mp[1] << ", " << mp[2] << ")" << endl;
@@ -568,7 +579,7 @@ void myDisplay()
 
 		GLfloat skinColor[] = {0.1, 1., 0.1, 1.0};
 
-		if (max >= 0) {
+		if (skeleton == 0) {
 			glBegin(GL_TRIANGLES);
 
 				skinColor[1] = m1; skinColor[0] = 1-m1;
@@ -586,24 +597,65 @@ void myDisplay()
 				glNormal3f(-n3[0],-n3[1],-n3[2]);
 				glVertex3f(v3[0],v3[1],v3[2]);
 
-                // WHAT IS THIS, I DON'T EVEN...
-				//skinColor[1] = m1; skinColor[0] = 1-m1;   
-			    //glMaterialfv(GL_FRONT, GL_DIFFUSE, skinColor); 
-				//glNormal3f(-n1[0],-n1[1],-n1[2]);
-				//glVertex3f(v1[0],v1[1],v1[2]);
-
 			glEnd();
+		} else if (skeleton == 1) {
+            glBegin(GL_LINES);
+            glColor3f(1.0f,1.0f,1.0f);                    
+            for (int i = 1; i < skelnum; i++) {
+                skel.getBoneVertice(i,bv2);
+                skel.getBoneVertice(skel.getParentBone(i),bv1);
+                glVertex3f(bv1[0], bv1[1], bv1[2]);
+                glVertex3f(bv2[0], bv2[1], bv2[2]);
+            }
+            glEnd( );
 		}
 	}
 
 	 glutSwapBuffers();
 }
 
+void animate(unsigned char key) {
+    Matrix4f mat, xr;
+    Vector3f piv, bv, tmp;
+    vector<int> children;
+    int numCh;
+    
+    if (key == '1') {
+        //do the animation of the thing's right arm, bones 13, 14, 15, 16, 17
+        //rotate all about bone vertice 6
+        skel.getBoneVertice(6, piv);
+        xr = rotX(PI/2);
+        numCh = children.size();
 
+        for (int j = 0; j < 4; j++) {
+            skel.getChildBones(13, children);       
+            for(int i = 0; i < numCh; i++) {
+                skel.getBoneVertice(children.back(),bv);
+                skel.setBoneVertice(children.back(), piv+(xr*(bv-piv)));
+                children.pop_back();
+            }
+            glutPostRedisplay();
+            sleep(1);
+        }
+    }
+}
 
+void keyPress(unsigned char key, int x, int y) {
+    if (key == 's') {
+        skeleton = 1;
+        glutPostRedisplay();
+    } else if (key == '1') {
+        animate(key);
+        cout << "YEAH" << endl;
+    }
+}
 
-
-
+void keyUp (unsigned char key, int x, int y) {  
+    if (key == 's') {
+        skeleton = 0;
+        glutPostRedisplay();
+    }
+}
 
 int main(int argc, char **argv)
 {
@@ -617,9 +669,6 @@ int main(int argc, char **argv)
 		cerr << argv[0] << " <filename> " << endl;
 		exit(1);
 	}
-
-
-    
 
 	int width, height;
 	glutInit(&argc, argv);
@@ -654,6 +703,8 @@ int main(int argc, char **argv)
 
 	glutDisplayFunc(myDisplay);// Callback function
 
+    glutKeyboardFunc(keyPress);
+    glutKeyboardUpFunc(keyUp);    
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 	glutTabletMotionFunc(tablet);
