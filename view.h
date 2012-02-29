@@ -178,6 +178,7 @@ public:
 	void loadFile(char * filename);
 
 	int trigNum() { return _trig.size() ;};
+	int vertNum() { return _v.size() ;};
 
 	void getTriangleVertices(int i, Vector3f & v1, Vector3f & v2, Vector3f & v3)
 	{
@@ -191,6 +192,16 @@ public:
 		_v[_trig[i]._vertex[0]] = v1; 
 		_v[_trig[i]._vertex[1]] = v2; 
 		_v[_trig[i]._vertex[2]] = v3; 
+	}
+
+    void getVertex(int i, Vector3f v1)
+	{
+		v1 = _v[i]; 
+	}
+	
+    void setVertex(int i, Vector3f v1)
+	{
+		_v[i] = v1; 
 	}
 	
 	void getTriangleNormals(int i, Vector3f & v1, Vector3f & v2, Vector3f & v3)
@@ -306,50 +317,7 @@ public:
 	    
 	    mp = _p1;
 	}
-	
-	/*void getTriangleNormals(int i, Vector3f & v1, Vector3f & v2, Vector3f & v3)
-	{
-		v1 = _vn[_trig[i]._normal[0]]; 
-		v2 = _vn[_trig[i]._normal[1]]; 
-		v3 = _vn[_trig[i]._normal[2]]; 
-	}
-		
 
-	void getMorseValue(int i, float & v1, float & v2, float & v3)
-	{
-		v1 = _node[_trig[i]._vertex[0]].cost; 
-		v2 = _node[_trig[i]._vertex[1]].cost; 
-		v3 = _node[_trig[i]._vertex[2]].cost; 
-	}
-
-	float color(int i) { return _trig[i].color();};
-
-
-	void setMorseMinMax(int i, float min, float max)
-	{
-		_trig[i].setMorseMinMax(min,max);
-	}
-
-	void getMorseMinMax(int i, float & min, float & max)
-	{
-		_trig[i].getMorseMinMax(min,max);
-	}
-
-
-	void calcTriangleArea() 
-	{
-		Vector3f v1,v2,v3;
-
-		for (int i = 0 ;i < _trig.size(); i++) 
-		{
-			getTriangleVertices(i, v1,v2,v3);
-			v3 -= v1;
-			v2 -= v1;
-
-			_trig[i]._area = 0.5f*sqrt(v3.dot(v3)*v2.dot(v2) - (v3.dot(v2)*(v3.dot(v2))));  
-//			cout << "trig " << i << " v2 " << v2 << " v3 " << v3 << " area = " << _trig[i]._area << endl;
-		}
-	}*/
 };
 	
 class Weights
@@ -361,7 +329,7 @@ public:
     Weights() {};
 	void loadFile(char * filename);
 
-	int weightNum() { return _w.size() ;};
+	int wghtNum() { return _w.size() ;};
 
 	void getWeights(int i, vector<float> & w)
 	{

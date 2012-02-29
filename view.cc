@@ -543,22 +543,20 @@ void myDisplay()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear OpenGL Window
 	int trignum = trig.trigNum();
 	int skelnum = skel.boneNum();
-	int weightnum = wght.weightNum();
-	cout << "Number of Triangles: " << trignum << endl;	
-	cout << "Number of Bones: " << skelnum << endl;
-	cout << "Number of Weight Vectors: " << weightnum << endl;
+	int wghtnum = wght.wghtNum();
+	int vertnum = trig.vertNum();
+	
+	//cout << "Number of Triangles: " << trignum << endl;	
+	//cout << "Number of Bones: " << skelnum << endl;
+	//cout << "Number of Weight Vectors: " << weightnum << endl;
 	Vector3f v1,v2,v3,n1,n2,n3;
     Vector3f t1, t2, t3;
     Vector3f mp;
     Vector3f bv1, bv2;
     vector<int> children;
-    
+      
     skel.getChildBones(0, children);
-    cout << "BONES: ";
-    for(int i = 0; i < children.size()-1; i++) {
-        cout << children[i] << ", ";
-    }
-    cout << children[children.size()-1] << endl;
+//    cout << children[children.size()-1] << endl;
     
     
     skel.getMidPoint(1, mp);
@@ -616,27 +614,43 @@ void myDisplay()
 
 void animate(unsigned char key) {
     Matrix4f mat, xr;
-    Vector3f piv, bv, tmp;
+    Vector3f piv, bv, cv;
     vector<int> children;
+    vector<float>  wv;
+    int vertnum = trig.vertNum();
     int numCh;
+    float angle, weight;
     
-    if (key == '1') {
+    if (key == 'q') {
         //do the animation of the thing's right arm, bones 13, 14, 15, 16, 17
         //rotate all about bone vertice 6
+        angle = PI/200;
         skel.getBoneVertice(6, piv);
-        xr = rotX(PI/2);
+        xr = rotX(angle);
+        children.push_back(13);
+        skel.getChildBones(13, children);
         numCh = children.size();
 
-        for (int j = 0; j < 4; j++) {
-            skel.getChildBones(13, children);       
-            for(int i = 0; i < numCh; i++) {
-                skel.getBoneVertice(children.back(),bv);
-                skel.setBoneVertice(children.back(), piv+(xr*(bv-piv)));
-                children.pop_back();
-            }
-            glutPostRedisplay();
-            sleep(1);
+        for(int i = 0; i < numCh; i++) {
+            skel.getBoneVertice(children[i], bv);
+            skel.setBoneVertice(children[i], piv+(xr*(bv-piv)));
         }
+
+        for(int j = 0; j < vertnum; j++) {
+            wght.getWeights(j,wv);
+            weight = 0;
+            for(int i = 0; i < numCh; i++) {
+                weight += wv[children[i]];
+            }
+            xr = rotX(0.);
+            trig.getVertex(j, cv);
+            cout << "Weight: " << weight << " Before: " << cv[0] << ", " << cv[1] << ", " << cv[2];
+            cv = piv+(xr*(cv-piv));
+            trig.setVertex(j, cv);
+            cout << " After: " << cv[0] << ", " << cv[1] << ", " << cv[2] << endl;            
+            
+        }   
+        glutPostRedisplay();
     }
 }
 
@@ -644,9 +658,8 @@ void keyPress(unsigned char key, int x, int y) {
     if (key == 's') {
         skeleton = 1;
         glutPostRedisplay();
-    } else if (key == '1') {
+    } else if (key == 'q') {
         animate(key);
-        cout << "YEAH" << endl;
     }
 }
 
