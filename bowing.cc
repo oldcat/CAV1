@@ -625,9 +625,9 @@ void animate(unsigned char key) {
         //do the animation of the thing's right arm, bones 13, 14, 15, 16, 17
         //rotate all about bone vertice 6
     if (key == 'q' | key == 'Q') {    
-        skel.getBoneVertice(5, piv);
+        skel.getBoneVertice(0, piv);
         xr = rotX(angle);
-        skel.getChildBones(6, children);
+        skel.getChildBones(5, children);
         numCh = children.size();
 
         for(int i = 0; i < numCh; i++) {

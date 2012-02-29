@@ -1,0 +1,9 @@
+The work I have done is using linear blend skinning the files are as follows with commands to compile and run. In all of the programmes listed below you can view the skeleton instead of the creature by pressing and holding the space bar.
+
+bowing.cc
+
+% g++ -o bowing bowing.cc matrix4f.cc -lGLU -lglut
+% ./bowing arma2.obj skeleton2.out attachment2.out
+
+This is the first bit of movement I acheived. In this the creature bows by rotating the bone from joint 0 to joint 5 in the X-Axis. To do this press and hold 'q' to bend forwards and 'Q' to bend backwards. There are no limits on this motion in either direction so it can tie itself in knots if the user allow it! 
+

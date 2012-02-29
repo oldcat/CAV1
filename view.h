@@ -291,6 +291,7 @@ public:
 	
     void getChildBones(int i, vector<int> & ch)
 	{
+        ch.push_back(i);
 	    for(int _j = 1; _j<boneNum(); _j++)
 	    {
 	        if(getParentBone(_j) == i) {
