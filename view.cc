@@ -558,10 +558,6 @@ void myDisplay()
     skel.getChildBones(0, children);
 //    cout << children[children.size()-1] << endl;
     
-    
-    skel.getMidPoint(1, mp);
-    cout << "MidPoint: (" << mp[0] << ", " << mp[1] << ", " << mp[2] << ")" << endl;
-
 	for (int i = 0 ; i < trignum; i++)  
 	{
 		/*** do the rasterization of the triangles here using glRecti ***/
@@ -638,16 +634,18 @@ void animate(unsigned char key) {
 
         for(int j = 0; j < vertnum; j++) {
             wght.getWeights(j,wv);
-            weight = 0;
+            weight = 0.;
             for(int i = 0; i < numCh; i++) {
                 weight += wv[children[i]];
             }
-            xr = rotX(0.);
-            trig.getVertex(j, cv);
-            cout << "Weight: " << weight << " Before: " << cv[0] << ", " << cv[1] << ", " << cv[2];
-            cv = piv+(xr*(cv-piv));
-            trig.setVertex(j, cv);
-            cout << " After: " << cv[0] << ", " << cv[1] << ", " << cv[2] << endl;            
+            if(weight > 0.) {
+                trig.getVertex(j, cv);
+                //cout << "Vert: " << j<< " Weight: " << weight << " Before: " << cv[0] << ", " << cv[1] << ", " << cv[2];
+                xr = rotX(angle*weight);
+                cv = piv+(xr*(cv-piv));
+                trig.setVertex(j, cv);
+                //cout << " After: " << cv[0] << ", " << cv[1] << ", " << cv[2] << endl;
+            }
             
         }   
         glutPostRedisplay();

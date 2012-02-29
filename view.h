@@ -187,19 +187,19 @@ public:
 		v3 = _v[_trig[i]._vertex[2]]; 
 	}
 	
-	void setTriangleVertices(int i, Vector3f v1, Vector3f v2, Vector3f v3)
+	void setTriangleVertices(int i, Vector3f & v1, Vector3f & v2, Vector3f & v3)
 	{
 		_v[_trig[i]._vertex[0]] = v1; 
 		_v[_trig[i]._vertex[1]] = v2; 
 		_v[_trig[i]._vertex[2]] = v3; 
 	}
 
-    void getVertex(int i, Vector3f v1)
+    void getVertex(int & i, Vector3f & v1)
 	{
 		v1 = _v[i]; 
 	}
 	
-    void setVertex(int i, Vector3f v1)
+    void setVertex(int & i, Vector3f & v1)
 	{
 		_v[i] = v1; 
 	}
