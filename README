@@ -5,5 +5,20 @@ bowing.cc
 % g++ -o bowing bowing.cc matrix4f.cc -lGLU -lglut
 % ./bowing arma2.obj skeleton2.out attachment2.out
 
-This is the first bit of movement I acheived. In this the creature bows by rotating the bone from joint 0 to joint 5 in the X-Axis. To do this press and hold 'q' to bend forwards and 'Q' to bend backwards. There are no limits on this motion in either direction so it can tie itself in knots if the user allow it! 
+This is the first bit of movement I acheived. In this the creature bows by rotating the bone from joint 0 to joint 5 in the X-Axis. To do this press and hold 'q' to bend forwards and 'Q' to bend backwards. This rotation is limited so the bone 0 - 5 can only dip as far as to be horizontal and 
 
+animated.cc
+
+% g++ -o animated animated.cc matrix4f.cc -lGLU -lglut
+% ./animated arma2.obj skeleton2.out attachment2.out
+
+Controls:
+
+q or Q: Control the bowing motion as seen in bowing.cc
+w or W: Control the rotation of the shoulders about vertex 5 of the skeleton. Using Euler angles this rotation is the same in terms of the model no matter what position the back is in.
+
+e,r,t,y,u,i,o,p (and equivalent capital letters): Similarly use Euler angles to control the arms. As the axis of rotation is obtained by taking the cross product of two of the bones not all joints move in the directions that would be expected. Also the right arm of the monster seems to be attatched to the left hip of the model and it pulls that when it moves. Unclear as to why this is.
+
+Rotation Matrices:
+
+Rotation is carried out using the left handed matrix obtained from http://www.cprogramming.com/tutorial/3d/rotation.html that allows me to rotate around an arbitrary axis, in this case the axis is taken as the cross product of current and parent bone vectors which is then scaled to be a unit vector for all but the 'q' and 'w' controls.
