@@ -610,7 +610,7 @@ void myDisplay()
 
 void animate(unsigned char key) {
     Matrix4f mat, xr;
-    Vector3f piv, bv, cv;
+    Vector3f piv, bv, cv, bdir;
     vector<int> children;
     vector<float>  wv;
     int vertnum = trig.vertNum();
@@ -624,34 +624,40 @@ void animate(unsigned char key) {
     }
         //do the animation of the thing's right arm, bones 13, 14, 15, 16, 17
         //rotate all about bone vertice 6
-    if (key == 'q' | key == 'Q') {    
+    if (key == 'q' | key == 'Q') {
         skel.getBoneVertice(0, piv);
-        xr = rotX(angle);
-        skel.getChildBones(5, children);
-        numCh = children.size();
+        skel.getBoneVertice(5, bv);
+        bdir = bv-piv;
 
-        for(int i = 0; i < numCh; i++) {
-            skel.getBoneVertice(children[i], bv);
-            skel.setBoneVertice(children[i], piv+(xr*(bv-piv)));
+        if ((bdir[2] > 0 & key == 'Q') | (bdir[1] > 0 & key == 'q')) {
+            xr = rotX(angle);
+            skel.getChildBones(5, children);
+            numCh = children.size();
+
+            for(int i = 0; i < numCh; i++) {
+                skel.getBoneVertice(children[i], bv);
+                skel.setBoneVertice(children[i], piv+(xr*(bv-piv)));
+            }
+
+            for(int j = 0; j < vertnum; j++) {
+                wght.getWeights(j,wv);
+                weight = 0.;
+                for(int i = 0; i < numCh; i++) {
+                    weight += wv[children[i]];
+                }
+                if(weight > 0.) {
+                    trig.getVertex(j, cv);
+                    //cout << "Vert: " << j<< " Weight: " << weight << " Before: " << cv[0] << ", " << cv[1] << ", " << cv[2];
+                    xr = rotX(angle*weight);
+                    cv = piv+(xr*(cv-piv));
+                    trig.setVertex(j, cv);
+                    //cout << " After: " << cv[0] << ", " << cv[1] << ", " << cv[2] << endl;
+                }
+                
+            }   
+            glutPostRedisplay();
         }
 
-        for(int j = 0; j < vertnum; j++) {
-            wght.getWeights(j,wv);
-            weight = 0.;
-            for(int i = 0; i < numCh; i++) {
-                weight += wv[children[i]];
-            }
-            if(weight > 0.) {
-                trig.getVertex(j, cv);
-                //cout << "Vert: " << j<< " Weight: " << weight << " Before: " << cv[0] << ", " << cv[1] << ", " << cv[2];
-                xr = rotX(angle*weight);
-                cv = piv+(xr*(cv-piv));
-                trig.setVertex(j, cv);
-                //cout << " After: " << cv[0] << ", " << cv[1] << ", " << cv[2] << endl;
-            }
-            
-        }   
-        glutPostRedisplay();
     }
 }
 

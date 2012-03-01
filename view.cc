@@ -13,7 +13,9 @@ GLfloat angle = -150;   /* in degrees */
 GLfloat xloc = 0, yloc = 0, zloc = 0;
 int moving, begin, skeleton;
 int newModel = 1;
-
+float b5angle = 0;
+float b8angle = 0;
+float b9angle = 0;
 
 /* ARGSUSED3 */
 void
@@ -134,7 +136,6 @@ static float matAmb2[4] = {0.5, 0.5, 0.5, 1.0};
 static float matDiff2[4] = {0.8, 0., 0., 1.0};
 static float matSpec2[4] = {0.4, 0., 0., 1.0};
 static float matEmission2[4] = {0.0, 0.0, 0.0, 1.0};
-
 
 
 TriangleMesh trig;
@@ -609,49 +610,239 @@ void myDisplay()
 }
 
 void animate(unsigned char key) {
-    Matrix4f mat, xr;
-    Vector3f piv, bv, cv;
+    Matrix4f mat, xr, yr, zr, ar;
+    Vector3f piv, bv, cv, bdir, b1, b2, pbdir, crosspr;
     vector<int> children;
     vector<float>  wv;
     int vertnum = trig.vertNum();
     int numCh;
-    float angle, weight;
+    float angle, weight, pbEAngleX, pbEAngleY, pbEAngleZ, rAngleX, rAngeY, rAngleZ, mag;
     
-    if (key == 'q') {
-        angle = PI/200;
-    } else if (key == 'Q') {
-        angle = -PI/200;
+    for(int i = 0; i < wv.size() ; i++) {
+        wv.pop_back();
+    }
+    
+    angle = PI/200;
+    
+    if (key == 'Q' | key == 'W' | key == 'E' | key == 'R' | key == 'T') {
+        angle = -angle;
     }
         //do the animation of the thing's right arm, bones 13, 14, 15, 16, 17
         //rotate all about bone vertice 6
-    if (key == 'q' | key == 'Q') {    
-        skel.getBoneVertice(5, piv);
-        xr = rotX(angle);
-        skel.getChildBones(6, children);
-        numCh = children.size();
+    if (key == 'q' | key == 'Q') {
+        skel.getBoneVertice(0, piv);
+        skel.getBoneVertice(5, bv);
+        bdir = bv-piv;
 
-        for(int i = 0; i < numCh; i++) {
-            skel.getBoneVertice(children[i], bv);
-            skel.setBoneVertice(children[i], piv+(xr*(bv-piv)));
+        if ((bdir[2] >= 0 & key == 'Q') | (bdir[1] >= 0 & key == 'q')) {
+            xr = rotX(angle);
+            skel.getChildBones(5, children);
+            numCh = children.size();
+
+            for(int i = 0; i < numCh; i++) {
+                skel.getBoneVertice(children[i], bv);
+                skel.setBoneVertice(children[i], piv+(xr*(bv-piv)));
+            }
+
+            for(int j = 0; j < vertnum; j++) {
+                wght.getWeights(j,wv);
+                weight = 0.;
+                for(int i = 0; i < numCh; i++) {
+                    weight += wv[children[i]];
+                }
+                if(weight > 0.) {
+                    trig.getVertex(j, cv);
+                    xr = rotX(angle*weight);
+                    cv = piv+(xr*(cv-piv));
+                    trig.setVertex(j, cv);
+
+                }
+                
+            }
+               
+            glutPostRedisplay();
         }
 
-        for(int j = 0; j < vertnum; j++) {
-            wght.getWeights(j,wv);
-            weight = 0.;
+    } else if (key == 'w' | key == 'W') {
+        skel.getBoneVertice(0, b1);
+        skel.getBoneVertice(5, b2);
+        pbdir = b2-b1;
+        
+        pbEAngleZ = atan(pbdir[1]/pbdir[2]);
+
+        skel.getBoneVertice(5, piv);
+        skel.getBoneVertice(6, bv);
+        bdir = bv-piv;  
+        
+        if ((b5angle >= -PI/6 & key == 'W') | (b5angle <= PI/6 & key == 'w')) {
+            b5angle += angle;
+            zr = rotZ(cos(pbEAngleZ)*angle);
+            yr = rotY(sin(pbEAngleZ)*angle);
+            skel.getChildBones(6, children);
+            numCh = children.size();
+
             for(int i = 0; i < numCh; i++) {
-                weight += wv[children[i]];
+                skel.getBoneVertice(children[i], bv);
+                skel.setBoneVertice(children[i], piv+(zr*(yr*(bv-piv))));
             }
-            if(weight > 0.) {
-                trig.getVertex(j, cv);
-                //cout << "Vert: " << j<< " Weight: " << weight << " Before: " << cv[0] << ", " << cv[1] << ", " << cv[2];
-                xr = rotX(angle*weight);
-                cv = piv+(xr*(cv-piv));
-                trig.setVertex(j, cv);
-                //cout << " After: " << cv[0] << ", " << cv[1] << ", " << cv[2] << endl;
+
+            for(int j = 0; j < vertnum; j++) {
+                
+                wght.getWeights(j,wv);
+                weight = 0.;
+                for(int i = 0; i < numCh; i++) {
+                    weight += wv[children[i]];
+                }
+                if(weight > 0.) {
+                    trig.getVertex(j, cv);
+                    zr = rotZ(weight*cos(pbEAngleZ)*angle);
+                    yr = rotY(weight*sin(pbEAngleZ)*angle);
+                    cv = piv+(zr*(yr*(cv-piv)));
+                    trig.setVertex(j, cv);
+                }
+                
             }
-            
-        }   
-        glutPostRedisplay();
+               
+            glutPostRedisplay();
+        }
+    } else if (key == 'e' | key == 'E') {
+        skel.getBoneVertice(0, b1);
+        skel.getBoneVertice(5, b2);
+        pbdir = b2-b1;
+        
+        pbEAngleZ = atan(pbdir[1]/pbdir[2]);
+
+        skel.getBoneVertice(6, piv);
+        skel.getBoneVertice(8, bv);
+        bdir = bv-piv;  
+        
+        if ((b8angle >= 0 & key == 'E') | (b8angle <= PI/10 & key == 'e')) {
+            b8angle += angle;
+            zr = rotZ(sin(pbEAngleZ)*angle);
+            yr = rotY(cos(pbEAngleZ)*angle);
+            skel.getChildBones(8, children);
+            numCh = children.size();
+
+            for(int i = 0; i < numCh; i++) {
+                skel.getBoneVertice(children[i], bv);
+                skel.setBoneVertice(children[i], piv+(zr*(yr*(bv-piv))));
+            }
+
+            for(int j = 0; j < vertnum; j++) {
+                
+                wght.getWeights(j,wv);
+                weight = 0.;
+                for(int i = 0; i < numCh; i++) {
+                    weight += wv[children[i]];
+                }
+                if(weight > 0.) {
+                    trig.getVertex(j, cv);
+                    zr = rotZ(weight*sin(pbEAngleZ)*angle);
+                    yr = rotY(weight*cos(pbEAngleZ)*angle);
+                    cv = piv+(zr*(yr*(cv-piv)));
+                    trig.setVertex(j, cv);
+                }
+                
+            }
+               
+            glutPostRedisplay();
+        }
+
+    } else if (key == 'r' | key == 'R') {
+        skel.getBoneVertice(0, b1);
+        skel.getBoneVertice(5, b2);
+        pbdir = b2-b1;
+        
+        pbEAngleZ = atan(pbdir[1]/pbdir[2]);
+
+        skel.getBoneVertice(8, piv);
+        skel.getBoneVertice(9, bv);
+        bdir = bv-piv;  
+        
+        if ((b9angle <= 0 & key == 'r') | (b9angle >= -PI/3 & key == 'R')) {
+            b9angle += angle;
+            zr = rotZ(sin(pbEAngleZ)*angle);
+            yr = rotY(cos(pbEAngleZ)*angle);
+            skel.getChildBones(9, children);
+            numCh = children.size();
+
+            for(int i = 0; i < numCh; i++) {
+                skel.getBoneVertice(children[i], bv);
+                skel.setBoneVertice(children[i], piv+(zr*(yr*(bv-piv))));
+            }
+
+            for(int j = 0; j < vertnum; j++) {
+                
+                wght.getWeights(j,wv);
+                weight = 0.;
+                for(int i = 0; i < numCh; i++) {
+                    weight += wv[children[i]];
+                }
+                if(weight > 0.) {
+                    trig.getVertex(j, cv);
+                    zr = rotZ(weight*sin(pbEAngleZ)*angle);
+                    yr = rotY(weight*cos(pbEAngleZ)*angle);
+                    cv = piv+(zr*(yr*(cv-piv)));
+                    trig.setVertex(j, cv);
+                }
+                
+            }
+               
+            glutPostRedisplay();
+        }
+
+    } else if (key == 't' | key == 'T') {
+        skel.getBoneVertice(8, b1);
+        skel.getBoneVertice(9, b2);
+        pbdir = b2-b1;
+        cout << "PB" << pbdir[0] << pbdir[1] << pbdir[2] << endl;
+        
+        pbEAngleZ = atan(pbdir[1]/pbdir[2]);
+
+        skel.getBoneVertice(9, piv);
+        skel.getBoneVertice(10, bv);
+        bdir = bv-piv;  
+        cout << "B" << bdir[0] << bdir[1] << bdir[2] << endl;
+
+        crosspr = pbdir.cross(bdir);
+        
+        mag = sqrt(crosspr[0]*crosspr[0] + crosspr[1]*crosspr[1] + crosspr[2]*crosspr[2]);
+        
+        crosspr[0] = crosspr[0]/mag;
+        crosspr[1] = crosspr[1]/mag;
+        crosspr[2] = crosspr[2]/mag;
+        
+        cout << "cross" << crosspr[0] << crosspr[1] << crosspr[2] << endl;
+        
+        if ((b9angle <= PI/3 & key == 't') | (b9angle >= 0 & key == 'T')) {
+            b9angle += angle;
+            ar = rotA(angle,crosspr);
+            skel.getChildBones(10, children);
+            numCh = children.size();
+
+            for(int i = 0; i < numCh; i++) {
+                skel.getBoneVertice(children[i], bv);
+                skel.setBoneVertice(children[i], piv+(ar*(bv-piv)));
+            }
+
+            for(int j = 0; j < vertnum; j++) {
+                
+                wght.getWeights(j,wv);
+                weight = 0.;
+                for(int i = 0; i < numCh; i++) {
+                    weight += wv[children[i]];
+                }
+                if(weight > 0.) {
+                    trig.getVertex(j, cv);
+                    ar = rotA(weight*angle,crosspr);
+                    cv = piv+(ar*(cv-piv));
+                    trig.setVertex(j, cv);
+                }
+                
+            }
+               
+            glutPostRedisplay();
+        }
     }
 }
 
@@ -659,7 +850,7 @@ void keyPress(unsigned char key, int x, int y) {
     if (key == ' ') {
         skeleton = 1;
         glutPostRedisplay();
-    } else if (key == 'q' | key == 'Q') {
+    } else if (key == 'q' | key == 'Q' | key == 'w' | key == 'W' | key == 'e' | key == 'E' | key == 'r' | key == 'R' | key == 't' | key == 'T') {
         animate(key);
     }
 }

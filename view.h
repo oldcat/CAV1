@@ -256,14 +256,6 @@ class Skeleton
 	vector <Vector3f> _s;
 	vector <int> _sn;
 	vector <int> _sp;
-	//vector <Vector3f> _vn;
-	//vector <Triangle> _trig;
-	//vector <Node> _node;
-	//vector <Edge> _edge;
-
-//	map <pair < int, int > , Edge > _edge;
-
-
     Vector3f _p1, _p2;
 
 
